@@ -5,9 +5,6 @@ import com.acme.management.controller.dto.BookingResponse;
 import com.acme.management.service.RoomBookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -42,7 +39,7 @@ public class RoomBookingController {
     }
 
     @PostMapping
-    @Operation(description = "creates or updates room booking, input bookingId only for existing books")
+    @Operation(description = "creates or updates room booking, include booking id only for existing books")
     public ResponseEntity<BookingResponse> postEvent(@Valid @RequestBody BookingRequest request) {
         BookingResponse response = bookingService.saveOrUpdateBooking(request);
         return new ResponseEntity<>(response, HttpStatus.OK);

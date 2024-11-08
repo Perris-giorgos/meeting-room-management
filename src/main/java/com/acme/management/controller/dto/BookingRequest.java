@@ -6,8 +6,6 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 public record BookingRequest(
 
@@ -21,7 +19,7 @@ public record BookingRequest(
         @FutureOrPresent(message = "Date from must be in the present or future")
         Instant dateFrom,
         @NotNull(message = "Date must not be null")
-        @Future(message = "Date TO must be in the future")
+        @Future(message = "Date to must be in the future")
         Instant dateTo
 ) {
 }

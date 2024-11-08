@@ -37,13 +37,14 @@ public class RoomBookingService {
     public BookingResponse saveOrUpdateBooking(BookingRequest request) {
         ZonedDateTime dateFrom = request.dateFrom().atZone(ZoneOffset.UTC);
         ZonedDateTime dateTo = request.dateTo().atZone(ZoneOffset.UTC);
-        validateRequest(request.roomCode(), dateFrom, dateTo);
+        validateRequest(request.roomCode(), dateFrom, dateTo, request.bookingId());
         RoomBooking booking = findExistingOrCreateBooking(request.bookingId());
 
         MeetingRoom room = roomRepository.findMeetingRoomByRoomCode(request.roomCode())
-                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Room " + request.roomCode() + " not found"));
         Employee employee = employeeRepository.findEmployeeByEmail(request.employeeEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+                .orElseThrow(() -> new IllegalArgumentException("""
+                        Employee with email %s not found""".formatted(request.employeeEmail())));
 
         booking.setRoom(room);
         booking.setEmployee(employee);
@@ -56,36 +57,41 @@ public class RoomBookingService {
         return convert(booking);
     }
 
-    private void validateRequest(String roomCode, ZonedDateTime dateFrom, ZonedDateTime dateTo) {
-
-        var overlappingBooks =
-                bookingRepository.findOverlappingBookings(roomCode, dateFrom.toLocalDate(), dateFrom.toLocalTime(), dateTo.toLocalTime());
-        if ( !overlappingBooks.isEmpty() ) {
-            throw new IllegalArgumentException("Booking request overlaps with existing bookings fot he same room");
-        }
-        if ( dateFrom.isAfter(dateTo) ) {
-            throw new IllegalArgumentException("Invalid request dates");
-        }
-    }
-
     public void cancelBooking(Long bookingId) {
         RoomBooking roomBooking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+                .orElseThrow(() -> new NoSuchElementException("Booking not found with id " + bookingId));
 
         if (roomBooking.getDate().isBefore(LocalDate.now())
                 || (roomBooking.getDate().isEqual(LocalDate.now())
-                && roomBooking.getEndTime().isBefore(LocalTime.now()))) {
-            throw new IllegalArgumentException("Cannot cancel a this booking anymore");
+                && roomBooking.getStartTime().isBefore(LocalTime.now()))) {
+            throw new IllegalArgumentException("Cannot cancel booking with id " + bookingId + " anymore");
         }
 
         bookingRepository.delete(roomBooking);
+    }
 
+    private void validateRequest(String roomCode, ZonedDateTime dateFrom, ZonedDateTime dateTo, Long bookingId) {
+        if ( dateFrom.isAfter(dateTo) ) {
+
+            throw new IllegalArgumentException("End date must be after start date");
+        }
+        Duration duration = Duration.between(dateFrom.toLocalTime(), dateTo.toLocalTime());
+        boolean isBookingDurationValid = duration.toHours() >= 1 && duration.toMinutes() % 60 == 0;
+        if ( !isBookingDurationValid ) {
+            throw new IllegalArgumentException("Bookings slots should at least 1 hour or consecutive multiples of 1 hour");
+        }
+        var overlappingBooks =
+                bookingRepository.findOverlappingBookings(roomCode, dateFrom.toLocalDate(), dateFrom.toLocalTime(), dateTo.toLocalTime());
+        if ( !overlappingBooks.isEmpty() && !overlappingBooks.stream().allMatch(book -> book.getId().equals(bookingId)) ) {
+            throw new IllegalArgumentException("Booking request overlaps with existing bookings for the same room");
+        }
     }
 
     private BookingResponse convert(RoomBooking booking) {
         return new BookingResponse(
                 booking.getId(),
                 booking.getRoom().getName(),
+                booking.getRoom().getRoomCode(),
                 booking.getEmployee().getEmail(),
                 booking.getDate(),
                 booking.getStartTime(),
@@ -95,7 +101,7 @@ public class RoomBookingService {
 
     private RoomBooking findExistingOrCreateBooking(Long id) {
         return id != null ? bookingRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Booking with Id" + id + "not found"))
+                .orElseThrow(() -> new NoSuchElementException("Booking with Id " + id + " not found"))
                 : new RoomBooking();
 
     }
