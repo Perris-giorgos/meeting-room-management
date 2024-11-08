@@ -1,7 +1,8 @@
-package com.acme.management.controller;
+package com.acme.management.it;
 
 import com.acme.management.AbstractBaseTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class MeetingRoomControllerTest extends AbstractBaseTest {
 
 
@@ -40,7 +42,8 @@ class MeetingRoomControllerTest extends AbstractBaseTest {
                 """;
 
         mockMvc.perform(get("/rest/rooms"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().json(expectedResponse));
     }
 
     @Test

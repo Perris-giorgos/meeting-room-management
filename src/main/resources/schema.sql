@@ -6,12 +6,16 @@ CREATE TABLE meeting_room (
     capacity INT
 );
 
+CREATE UNIQUE INDEX unique_code_index ON meeting_room (room_code);
+
 -- Employee table
 CREATE TABLE employee (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL
 );
+
+CREATE UNIQUE INDEX unique_email_index ON employee (email);
 
 -- RoomBooking table
 CREATE TABLE room_booking (
@@ -24,3 +28,6 @@ CREATE TABLE room_booking (
     FOREIGN KEY (room_id) REFERENCES meeting_room(id),
     FOREIGN KEY (employee_id) REFERENCES employee(id)
 );
+
+CREATE INDEX booking_date_index ON room_booking (booking_date);
+

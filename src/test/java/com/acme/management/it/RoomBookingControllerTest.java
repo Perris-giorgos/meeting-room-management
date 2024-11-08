@@ -1,7 +1,8 @@
-package com.acme.management.controller;
+package com.acme.management.it;
 
 import com.acme.management.AbstractBaseTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
 
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -9,7 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class RoomBookingControllerTest extends AbstractBaseTest {
 
     @Test
@@ -313,7 +314,7 @@ class RoomBookingControllerTest extends AbstractBaseTest {
                 """;
         String expectedResponse = """
                    [{
-                      "bookingId": 2,
+                      "bookingId": 1,
                       "roomName":"Road Runner Room",
                       "roomCode":"RUNNER",
                       "employeeEmail":"george@acme.com",
@@ -333,7 +334,7 @@ class RoomBookingControllerTest extends AbstractBaseTest {
                 .andExpect(content().json(expectedResponse, true));
 
         // cancel booking
-        mockMvc.perform(delete("/rest/bookings/2")).andExpect(status().isOk());
+        mockMvc.perform(delete("/rest/bookings/1")).andExpect(status().isOk());
 
         // verify booking not exist anymore
         mockMvc.perform(get("/rest/bookings?roomCode=RUNNER&date=2024-12-10"))

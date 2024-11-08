@@ -29,7 +29,7 @@ public class RoomBookingController {
     @GetMapping
     @Operation(description = "returns all the bookings of a room a specific day.")
     @Parameter(name = "roomCode", example = "COYOTE")
-    @Parameter(name = "date", example = "2024-11-07")
+    @Parameter(name = "date", example = "2024-12-07")
     public ResponseEntity<List<BookingResponse>> getBookings(
             @RequestParam String roomCode,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
@@ -51,8 +51,4 @@ public class RoomBookingController {
         bookingService.cancelBooking(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
-
-
-
 }
