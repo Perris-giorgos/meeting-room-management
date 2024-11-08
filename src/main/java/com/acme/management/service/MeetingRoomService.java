@@ -6,8 +6,6 @@ import com.acme.management.controller.dto.MeetingRoomResponse;
 import com.acme.management.repository.MeetingRoomRepository;
 import com.acme.management.repository.entity.MeetingRoom;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,10 +38,10 @@ public class MeetingRoomService {
                         .build();
         MeetingRoom savedRoom = roomRepository.save(room);
 
-        return new MeetingRoomResponse(savedRoom.getName(), savedRoom.getRoomCode());
+        return new MeetingRoomResponse(savedRoom.getName(), savedRoom.getRoomCode(), request.capacity());
     }
 
     private MeetingRoomResponse convert(MeetingRoom room) {
-        return new MeetingRoomResponse(room.getName(), room.getRoomCode());
+        return new MeetingRoomResponse(room.getName(), room.getRoomCode(), room.getCapacity());
     }
 }

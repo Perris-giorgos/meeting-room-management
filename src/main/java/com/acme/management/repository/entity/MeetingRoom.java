@@ -22,6 +22,6 @@ public class MeetingRoom {
     private String name;
 
     @Column(name = "capacity")
-    private int capacity;
+    private Integer capacity;
 
 }
